@@ -1,0 +1,36 @@
+
+
+GET http://localhost:8080/users
+
+###
+
+POST http://localhost:8080/auth/register
+Content-Type: application/json
+
+{
+    "username": "Mario",
+    "password": "password-di-mario"
+}
+
+###
+
+POST http://localhost:8080/auth/login
+Content-Type: application/json
+
+{
+    "username": "Mario",
+    "password": "password-di-mario"
+}
+
+###
+
+GET http://localhost:8080/
+Authorization: Bearer 'access token'
+
+###
+
+POST http://localhost:8080/auth/token
+Content-Type: application/json
+{
+    "refreshToken": "refresh-token"
+}
