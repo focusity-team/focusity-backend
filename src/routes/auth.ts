@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import lodash from 'lodash'
 
 import { getNewUserId, addUser, User, findUserByUsername, findUserById,  } from '../db/users'
-import { addRefreshToken, isRefreshTokenPresent, generateRefreshToken, generateAccessToken} from '../db/users'
+import { removeRefreshToken, addRefreshToken, isRefreshTokenPresent, generateRefreshToken, generateAccessToken} from '../db/users'
 
 export const router = Router()
 router.post("/login", async (req, res) => {
@@ -49,6 +49,12 @@ router.post('/register', async (req, res) => {
 	} catch {
 		res.status(500).send()
 	}
+})
+
+router.delete('/logout', (req, res)=>{
+	const token = req.body.token	
+    removeRefreshToken(token)
+    res.sendStatus(200)
 })
 
 export function authenticateUser(req : Request, res : Response, next : NextFunction){

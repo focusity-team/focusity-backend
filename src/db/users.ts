@@ -6,6 +6,8 @@ export interface User{
     password: string
 }
 
+
+
 export var users : User[] = []
 export function findUserByUsername(username : string){
     return users.find((user)=> user.username == username)
@@ -26,6 +28,9 @@ export function getUsersArray(){
 var refreshTokens : string[] = []
 export function addRefreshToken(token : string){
     if (!refreshTokens.includes(token)) refreshTokens.push(token)
+}
+export function removeRefreshToken(token : String){
+    refreshTokens.filter((t)=> t !== token)
 }
 
 export function isRefreshTokenPresent(token : string){
