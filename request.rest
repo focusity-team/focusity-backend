@@ -8,8 +8,8 @@ POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
-    "username": "Mario",
-    "password": "password-di-mario"
+    "username": "Dario",
+    "password": "password-di-dario"
 }
 
 ###
@@ -25,7 +25,7 @@ Content-Type: application/json
 ###
 
 GET http://localhost:8080/
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNzYzMTY5OTA2LCJleHAiOjE3NjMxNjk5MjF9.Rpao-9pn2UJnPl9ChUE62h1410swdQFwBW8Od0-pi4E
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzYzMjQzMDI4LCJleHAiOjE3NjMyNDMwNDN9.yZ5qOLK8wQYIIgwrbRcroOsHWyxcQ9Li_GaSGBsaDvU
 
 ###
 
@@ -33,5 +33,15 @@ POST http://localhost:8080/auth/token
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MCwiaWF0IjoxNzYzMTY5ODgxLCJleHAiOjE3NjM3NzQ2ODF9.NkjaJJVOKHmCsxbiwMYarQ5Zi5kUERtlqEh2p8gwagQ"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzYzMjQzMzIwLCJleHAiOjE3NjM4NDgxMjB9.SSXpRPwEwukLLDfLVdv52ImQf_qi8kGcwSOGLYE565E"
+}
+
+
+###
+
+DELETE http://localhost:8080/auth/logout
+Content-Type: application/json
+
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzYzMjQzMzIwLCJleHAiOjE3NjM4NDgxMjB9.SSXpRPwEwukLLDfLVdv52ImQf_qi8kGcwSOGLYE565E"
 }

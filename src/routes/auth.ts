@@ -3,14 +3,13 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import lodash from 'lodash'
 
-import { getNewUserId, addUser, User, findUserByUsername, findUserById,  } from '../db/users'
+import { addUser, User, findUserByUsername, findUserById,  } from '../db/users'
 import { removeRefreshToken, addRefreshToken, isRefreshTokenPresent, generateRefreshToken, generateAccessToken} from '../db/users'
 
 export const router = Router()
 router.post("/login", async (req, res) => {
     const { username, password } = req.body
-    const user = findUserByUsername(username)
-
+    const user = await findUserByUsername(username)
     if (!user) return res.status(401).send()
     
     if (await bcrypt.compare(password, user.password)){
@@ -28,8 +27,8 @@ router.post('/token', (req, res)=>{
 	const refreshToken = req.body.refreshToken
     if (!refreshToken || !isRefreshTokenPresent(refreshToken)) return res.status(401).send()
 
-    jwt.verify(refreshToken, process.env.JWT_SECRET || '', (err : any, user_info : any)=> {
-        const user = findUserById(user_info.id)
+    jwt.verify(refreshToken, process.env.JWT_SECRET || '', async (err : any, user_info : any)=> {
+        const user = await findUserById(user_info.id)
         if (err || !user) return res.status(401).send()
 
         res.json({accessToken : generateAccessToken(user)})
@@ -40,19 +39,24 @@ router.post('/register', async (req, res) => {
 	try {
 		let hashed_password = await bcrypt.hash(req.body.password, 10)
         const user : User = {
-            id: getNewUserId(),
+            id: 0,
 			username: req.body.username,
 			password: hashed_password
         }
-        addUser(user)
-		res.status(200).send()
+        const data = await addUser(user)
+        if (data?.status == 201){
+		    res.status(200).send()
+        }
+        else {
+            res.status(500)
+        }
 	} catch {
 		res.status(500).send()
 	}
 })
 
 router.delete('/logout', (req, res)=>{
-	const token = req.body.token	
+	const token = req.body.refreshToken	
     removeRefreshToken(token)
     res.sendStatus(200)
 })
@@ -62,7 +66,7 @@ export function authenticateUser(req : Request, res : Response, next : NextFunct
     const token = authHeader?.split(" ")[1]
     if (!token) return res.status(401).send()
         
-    jwt.verify(token, "segreto", (err, user)=>{
+    jwt.verify(token, process.env.JWT_SECRET ?? '', (err, user)=>{
         if (err) return res.status(401).send()
             lodash.set(req, "user_info", user)
         next()

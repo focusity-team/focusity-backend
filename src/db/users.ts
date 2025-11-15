@@ -1,4 +1,12 @@
 import jwt from "jsonwebtoken"
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
+
+var supabase : SupabaseClient | null = null
+export function connect(){
+    const supabaseUrl = process.env.SUPABASE_URL ?? ''
+    const supabaseKey : string = process.env.SUPABASE_KEY ?? ''
+    supabase = createClient(supabaseUrl, supabaseKey)
+}
 
 export interface User{
     id: number, 
@@ -6,21 +14,26 @@ export interface User{
     password: string
 }
 
-
-
 export var users : User[] = []
-export function findUserByUsername(username : string){
-    return users.find((user)=> user.username == username)
+export async function findUserByUsername(username : string){
+    const res = await supabase?.from('users').select('*').eq('username', username)
+    // return users.find((user)=> user.username == username)
+    return res?.data?.[0]
 }
-export function findUserById(id : number){
-    return users.find((user)=> user.id == id)
+
+export async function findUserById(id : number){
+    const res = await supabase?.from('users').select('*').eq('id', id)
+    // return users.find((user)=> user.username == username)
+    return res?.data?.[0]
 }
-export function addUser(user : User){
-    users.push(user)
+
+export async function addUser(user : User){
+    return await supabase?.from('users').insert({
+        username: user.username,
+        password: user.password
+    })
 }
-export function getNewUserId(){
-    return users.length
-}
+
 export function getUsersArray(){
     return users
 }
@@ -29,8 +42,9 @@ var refreshTokens : string[] = []
 export function addRefreshToken(token : string){
     if (!refreshTokens.includes(token)) refreshTokens.push(token)
 }
+
 export function removeRefreshToken(token : String){
-    refreshTokens.filter((t)=> t !== token)
+    refreshTokens = refreshTokens.filter((t)=> t !== token)
 }
 
 export function isRefreshTokenPresent(token : string){
