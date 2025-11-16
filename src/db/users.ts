@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken"
 import { supabase } from './db'
 
 export interface User{
-    id: number, 
+    id_user: number, 
     username: string,
     password: string,
     email: string    
@@ -25,6 +25,12 @@ export async function findUserByUsername(username : string){
 
 export async function findUserById(id : number){
     const res = await supabase?.from('userinfo').select('*').eq('id_user', id)
+    // return users.find((user)=> user.username == username)
+    return res?.data?.[0]
+}
+
+export async function findProfileByUserId(id_user : number){
+    const res = await supabase?.from('profile').select('*').eq('id_user', id_user)
     // return users.find((user)=> user.username == username)
     return res?.data?.[0]
 }
@@ -77,11 +83,11 @@ export function isRefreshTokenPresent(token : string){
 }
 
 export function generateRefreshToken(user : User){
-    const user_info = {id : user.id}
+    const user_info = {id_user : user.id_user}
     return jwt.sign(user_info, process.env.JWT_SECRET || '', { expiresIn: "7d" })
 }
 
 export function generateAccessToken(user : User){
-    const user_info = {id : user.id}
+    const user_info = {id_user : user.id_user}
     return jwt.sign(user_info, process.env.JWT_SECRET || '', { expiresIn: "15s" })
 }

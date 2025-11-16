@@ -37,7 +37,7 @@ POST http://localhost:8080/auth/token
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzYzMjQzMzIwLCJleHAiOjE3NjM4NDgxMjB9.SSXpRPwEwukLLDfLVdv52ImQf_qi8kGcwSOGLYE565E"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoxMCwiaWF0IjoxNzYzMzI3ODYyLCJleHAiOjE3NjM5MzI2NjJ9.VqWFpQEXXr1KeItTalDAQkyO6GOJPpIAfBdafUmZTmI"
 }
 
 
@@ -49,3 +49,10 @@ Content-Type: application/json
 {
     "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzYzMjQzMzIwLCJleHAiOjE3NjM4NDgxMjB9.SSXpRPwEwukLLDfLVdv52ImQf_qi8kGcwSOGLYE565E"
 }
+
+###
+
+GET http://localhost:8080/profile/current
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzYzMjQzMDI4LCJleHAiOjE3NjMyNDMwNDN9.yZ5qOLK8wQYIIgwrbRcroOsHWyxcQ9Li_GaSGBsaDvU
+
+###

@@ -1,5 +1,6 @@
 import express, { Application } from 'express'
 import { router as AuthRouter, authenticateUser } from './routes/auth'
+import { router as ProfileRouter  } from './routes/profile'
 
 import { connect as ConnectSupabase, connect} from './db/db'
 import { getUsersArray } from './db/users'
@@ -19,6 +20,7 @@ app.use(express.urlencoded({extended: false}))
 app.use(express.json())
 
 app.use('/auth', AuthRouter)
+app.use('/profile', ProfileRouter)
 
 app.get('/', authenticateUser, (req, res)=>{
     res.send("Logged In")

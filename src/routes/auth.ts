@@ -9,8 +9,9 @@ import { removeRefreshToken, addRefreshToken, isRefreshTokenPresent, generateRef
 export const router = Router()
 router.post("/login", async (req, res) => {
     const { username, password } = req.body
-    console.log("Login attempt: ", {username})
     const user = await findUserByUsername(username)
+    console.log(`Login Attempt: Username ${username}; Password ${password}; Userobj ${user}`)
+
     if (!user) return res.status(401).send()
     
     if (await bcrypt.compare(password, user.password)){
@@ -25,11 +26,14 @@ router.post("/login", async (req, res) => {
 })
 
 router.post('/token', (req, res)=>{
+    console.log(`New Token Requested`)
+
 	const refreshToken = req.body.refreshToken
     if (!refreshToken || !isRefreshTokenPresent(refreshToken)) return res.status(401).send()
 
     jwt.verify(refreshToken, process.env.JWT_SECRET || '', async (err : any, user_info : any)=> {
-        const user = await findUserById(user_info.id)
+        const user = await findUserById(user_info.id_user)
+        console.log("jwt data", user_info, "db data", user)
         if (err || !user) return res.status(401).send()
 
         res.json({accessToken : generateAccessToken(user)})
@@ -40,7 +44,7 @@ router.post('/register', async (req, res) => {
 	try {
 		let hashed_password = await bcrypt.hash(req.body.password, 10)
         const user: User = {
-            id: 0,
+            id_user: 0,
 			username: req.body.username,
 			password: hashed_password,
             email: req.body.email
@@ -53,6 +57,7 @@ router.post('/register', async (req, res) => {
             id_user: 0,
         }
         const success = await addUser(user, profile)
+
         if (success){
 		    res.status(200).send()
         }
@@ -75,9 +80,9 @@ export function authenticateUser(req : Request, res : Response, next : NextFunct
     const token = authHeader?.split(" ")[1]
     if (!token) return res.status(401).send()
         
-    jwt.verify(token, process.env.JWT_SECRET ?? '', (err, user)=>{
+    jwt.verify(token, process.env.JWT_SECRET ?? '', (err, user : any)=>{
         if (err) return res.status(401).send()
-            lodash.set(req, "user_info", user)
+        lodash.set(req, "id_user", user.id_user)
         next()
     })
 }
