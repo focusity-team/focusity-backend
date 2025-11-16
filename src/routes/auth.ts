@@ -3,12 +3,13 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import lodash from 'lodash'
 
-import { addUser, User, findUserByUsername, findUserById,  } from '../db/users'
+import { Profile, addUser, User, findUserByUsername, findUserById,  } from '../db/users'
 import { removeRefreshToken, addRefreshToken, isRefreshTokenPresent, generateRefreshToken, generateAccessToken} from '../db/users'
 
 export const router = Router()
 router.post("/login", async (req, res) => {
     const { username, password } = req.body
+    console.log("Login attempt: ", {username})
     const user = await findUserByUsername(username)
     if (!user) return res.status(401).send()
     
@@ -38,17 +39,25 @@ router.post('/token', (req, res)=>{
 router.post('/register', async (req, res) => {
 	try {
 		let hashed_password = await bcrypt.hash(req.body.password, 10)
-        const user : User = {
+        const user: User = {
             id: 0,
 			username: req.body.username,
-			password: hashed_password
+			password: hashed_password,
+            email: req.body.email
         }
-        const data = await addUser(user)
-        if (data?.status == 201){
+        const profile: Profile = {
+            id: 0,
+            name: req.body.name,
+            description: req.body.description,
+            pfp: req.body.pfp,
+            id_user: 0,
+        }
+        const success = await addUser(user, profile)
+        if (success){
 		    res.status(200).send()
         }
         else {
-            res.status(500)
+            res.status(500).send()
         }
 	} catch {
 		res.status(500).send()

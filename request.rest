@@ -8,8 +8,12 @@ POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
-    "username": "Dario",
-    "password": "password-di-dario"
+    "username": "_young_gario_",
+    "password": "PasswordGario10@",
+    "description": "Descrizione d i new gario",
+    "pfp": 33,
+    "name": "gario",
+    "email": "gario_young@gmail.com"
 }
 
 ###
@@ -18,8 +22,8 @@ POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-    "username": "Mario",
-    "password": "password-di-mario"
+    "username": "_young_gario_",
+    "password": "PasswordGario10@"
 }
 
 ###

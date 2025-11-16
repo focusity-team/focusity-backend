@@ -1,7 +1,8 @@
 import express, { Application } from 'express'
 import { router as AuthRouter, authenticateUser } from './routes/auth'
 
-import {getUsersArray, connect as ConnectSupabase, connect} from './db/users'
+import { connect as ConnectSupabase, connect} from './db/db'
+import { getUsersArray } from './db/users'
 
 if (process.env.NODE_ENV !== 'production') { 
     const dotenv = require('dotenv')
@@ -12,7 +13,6 @@ const app : Application = express()
 const port : number = 8080
 
 ConnectSupabase()
-
 
 
 app.use(express.urlencoded({extended: false}))
