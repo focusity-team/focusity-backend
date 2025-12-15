@@ -1,8 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express'
 import { authenticateUser } from './auth'
-import { findProfileByUserId, findUserById, findUserByUsername } from '../db/users'
+import { findProfileByUserId, findUserById, findUserByUsername, getTodaysStudyHours } from '../db/users'
 import { get as getUntype } from 'lodash'
-
 
 export const router = Router()
 router.get("/current", authenticateUser, async (req, res)=>{
@@ -15,6 +14,12 @@ router.get("/current", authenticateUser, async (req, res)=>{
                 name: findProfileRes.name, 
                 description: findProfileRes.description,
                 pfp: findProfileRes.pfp
+                //username
+                //stats 
+                // - ore di oggi di studio
+                // - daily average ore
+                // - badge
+                //friends
             })
         }
         else{
@@ -24,4 +29,9 @@ router.get("/current", authenticateUser, async (req, res)=>{
     else {
         res.sendStatus(401)
     }
+})
+
+
+router.get("/test", async (req, res)=>{
+    res.json(await getTodaysStudyHours(3))
 })

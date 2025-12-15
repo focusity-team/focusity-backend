@@ -8,12 +8,12 @@ POST http://localhost:8080/auth/register
 Content-Type: application/json
 
 {
-    "username": "_young_gario_",
-    "password": "PasswordGario10@",
-    "description": "Descrizione d i new gario",
-    "pfp": 33,
-    "name": "gario",
-    "email": "gario_young@gmail.com"
+    "username": "aaa",
+    "password": "@A123456",
+    "description": "Descrizione del fantasma di gario",
+    "pfp": 10,
+    "name": "aaa",
+    "email": "aaa@gmail.com"
 }
 
 ###
@@ -22,8 +22,8 @@ POST http://localhost:8080/auth/login
 Content-Type: application/json
 
 {
-    "username": "_young_gario_",
-    "password": "PasswordGario10@"
+    "username": "aaa",
+    "password": "@A123456"
 }
 
 ###
@@ -37,7 +37,7 @@ POST http://localhost:8080/auth/token
 Content-Type: application/json
 
 {
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoxMCwiaWF0IjoxNzYzMzI3ODYyLCJleHAiOjE3NjM5MzI2NjJ9.VqWFpQEXXr1KeItTalDAQkyO6GOJPpIAfBdafUmZTmI"
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoxNywiaWF0IjoxNzY1NzM5MDA5LCJleHAiOjE3NjYzNDM4MDl9._rth7IF1wHaQCvoz-AqlXhlS5RkCz7HOdM0dEkAUlkc"
 }
 
 
@@ -53,6 +53,17 @@ Content-Type: application/json
 ###
 
 GET http://localhost:8080/profile/current
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzYzMjQzMDI4LCJleHAiOjE3NjMyNDMwNDN9.yZ5qOLK8wQYIIgwrbRcroOsHWyxcQ9Li_GaSGBsaDvU
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoxNywiaWF0IjoxNzY1NzM5MDIwLCJleHAiOjE3NjU3MzkwMzV9.BUjG8JaI_bRA5rOZM4XagsjP5cobgCf6jYq_Mnxuzu4
 
 ###
+
+GET http://localhost:8080/profile/test
+
+###
+POST http://localhost:8080/session/create
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZF91c2VyIjoxNywiaWF0IjoxNzY1NzM5MDIwLCJleHAiOjE3NjU3MzkwMzV9.BUjG8JaI_bRA5rOZM4XagsjP5cobgCf6jYq_Mnxuzu4
+Content-Type: application/json
+
+{
+    "title": "prova"
+}

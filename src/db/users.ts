@@ -16,6 +16,8 @@ export interface Profile {
     id_user: number
 }
 
+
+
 export var users : User[] = []
 export async function findUserByUsername(username : string){
     const res = await supabase?.from('userinfo').select('*').eq('username', username)
@@ -82,6 +84,14 @@ export function isRefreshTokenPresent(token : string){
     return refreshTokens.includes(token)
 }
 
+export function getRefreshTokens(){
+    return refreshTokens
+}
+
+export function clearRefreshTokens(){
+    refreshTokens = []
+}
+
 export function generateRefreshToken(user : User){
     const user_info = {id_user : user.id_user}
     return jwt.sign(user_info, process.env.JWT_SECRET || '', { expiresIn: "7d" })
@@ -90,4 +100,26 @@ export function generateRefreshToken(user : User){
 export function generateAccessToken(user : User){
     const user_info = {id_user : user.id_user}
     return jwt.sign(user_info, process.env.JWT_SECRET || '', { expiresIn: "15s" })
+}
+
+
+
+
+export async function getTodaysStudyHours(id_profile : number){
+    const date_start = new Date()
+    date_start.setHours(0, 0, 0, 0)
+    const date_end = new Date()
+    date_end.setHours(23, 59, 59, 0)
+     
+    const res = await supabase?.from('study_session').select('*').eq('id_profile', id_profile).gt('start_date_time', date_start.toISOString()).lt('end_date_time', date_end.toISOString())
+    if (!res?.data) return undefined
+    
+    var totalSeconds = 0
+    if (res.data.length){
+        for (let i = 0; i < res.data.length; i++){
+            totalSeconds += res.data[i].study_time
+        }
+    }
+
+    return Math.round((totalSeconds / 3600) * 100) / 100
 }
