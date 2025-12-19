@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken"
 import { supabase } from './db'
+import {get as getUntype} from 'lodash'
+import {Request} from 'express'
 
 export interface User{
     id_user: number, 
@@ -102,6 +104,14 @@ export function generateAccessToken(user : User){
     return jwt.sign(user_info, process.env.JWT_SECRET || '', { expiresIn: "15s" })
 }
 
+export async function getProfileFromRequest(req : Request){
+    const curr_user_id = getUntype(req, "id_user")
+    if (!curr_user_id) return undefined
+    
+    const user_profile = await findProfileByUserId(curr_user_id)
+
+    return user_profile
+}
 
 
 
