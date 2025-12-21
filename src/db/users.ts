@@ -47,7 +47,7 @@ export async function addUser(user : User, profile : Profile){
         fcm_token: "",
         created_on: new Date().toISOString()
     })
-    console.log("Userinfo res", userinfoInsertRes)
+    // console.log("Userinfo res", userinfoInsertRes)
 
     if (userinfoInsertRes?.status == 201){
         const userNewIdRes = await supabase?.from('userinfo').select('id_user').eq('username', user.username)
@@ -59,8 +59,8 @@ export async function addUser(user : User, profile : Profile){
             id_user: new_id,
         })
 
-        console.log("userNewID res", userNewIdRes)
-        console.log("profileInsert res", profileInsertRes)
+        // console.log("userNewID res", userNewIdRes)
+        // console.log("profileInsert res", profileInsertRes)
 
         return profileInsertRes?.error == null
     }

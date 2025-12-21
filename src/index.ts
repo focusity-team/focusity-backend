@@ -1,7 +1,7 @@
 import express, { Application } from 'express'
 import { router as AuthRouter, authenticateUser } from './routes/auth'
 import { router as ProfileRouter  } from './routes/profile'
-import { router as SubjectsRouter  } from './routes/subjects'
+import { router as SubjectsRouter  } from './routes/subject'
 
 import { connect as ConnectSupabase, connect} from './db/db'
 import { getUsersArray } from './db/users'
@@ -27,7 +27,7 @@ app.use(express.json())
 app.use('/auth', AuthRouter)
 app.use('/profile', ProfileRouter)
 app.use('/session', SessionRouter)
-app.use('/subjects', SubjectsRouter)
+app.use('/subject', SubjectsRouter)
 
 app.get('/', authenticateUser, (req, res)=>{
     res.send("Logged In")

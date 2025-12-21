@@ -27,8 +27,8 @@ router.post('/create', authenticateUser, async (req, res)=>{
 	}
 	
 	if (create_session_res?.data && create_session_res.data.length > 0){
-		const session_id = create_session_res.data[0].id_study_session
-		return res.json({session_id})
+		const id_session = create_session_res.data[0].id_study_session
+		return res.status(200).json({id_session})
 	}
 	
 	return res.sendStatus(500)
@@ -40,10 +40,11 @@ const addSegmentSchema = z.object({
 	id_topic: z.number().int().positive()
 })
 
-router.post('/addSegment', authenticateUser, async (req, res)=>{
+router.post('/createSegment', authenticateUser, async (req, res)=>{
 	const userProfile = await getProfileFromRequest(req)
 	if (!userProfile) return res.sendStatus(401)
 		
+	console.log("segment body", req.body)
 	const validation = addSegmentSchema.safeParse(req.body)
 	if (!validation.success) return res.status(400).json({error:z.treeifyError(validation.error)})
 		
@@ -56,58 +57,18 @@ router.post('/addSegment', authenticateUser, async (req, res)=>{
 		id_topic: id_topic
 	}).select()
 	
-})
+	if (create_segment_res && !create_segment_res.error){
+		return res.status(200).json({
+			id_session_segment: create_segment_res.data[0].id_session_segment
+		})
+	}
 
-
-const createTopicSchema = z.object({
-	id_subject: z.number().int().positive(),
-	name: z.string().max(30)
-})
-
-router.post('/createTopic', authenticateUser, async (req, res) => {
-	const userProfile = await getProfileFromRequest(req)
-	if (!userProfile) return res.sendStatus(401)
-
-		
-	const validation = createTopicSchema.safeParse(req.body)
-	if (!validation.success) return res.status(400).json({error: z.treeifyError(validation.error)})
-
-	const {id_subject, name} = validation.data
-
-
-	const create_topic_res = await supabase?.from('topic').insert({
-		id_subject,
-		name,
-	}).select()
-
-	if (!create_topic_res || create_topic_res.error) return res.status(500).json(create_topic_res?.error)
-	else return res.status(200).json({id_topic: create_topic_res.data[0].id_topic})
+	res.sendStatus(500)
 	
 })
 
-const createSubjectSchema = z.object({
-	name: z.string().max(30)
-})
-
-router.post('/createSubject', authenticateUser, async (req, res) => {
-	const userProfile = await getProfileFromRequest(req)
-	if (!userProfile) return res.sendStatus(401)
-
-	console.log(req.body)
-	const validation = createSubjectSchema.safeParse(req.body)
-	if (!validation.success) return res.status(400).json({error: z.treeifyError(validation.error)})
-
-	const { name } = validation.data
 
 
-	const create_subject_res = await supabase?.from('subject').insert({
-		name,
-		id_profile: userProfile.id_profile
-	}).select()
-	
-	if (!create_subject_res || create_subject_res.error) return res.status(500).json(create_subject_res?.error)
-	else return res.status(200).json({id_subject: create_subject_res.data[0].id_subject})
-})
 
 
 router.get('/join/:session_id', (req, res)=>{

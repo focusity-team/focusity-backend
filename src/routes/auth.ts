@@ -10,7 +10,7 @@ export const router = Router()
 router.post("/login", async (req, res) => {
     const { username, password } = req.body
     const user = await findUserByUsername(username)
-    console.log(`Login Attempt: Username ${username}; Password ${password}; Userobj ${user}`)
+    // console.log(`Login Attempt: Username ${username}; Password ${password}; Userobj ${user}`)
 
     if (!user) return res.status(401).send()
     
@@ -26,14 +26,14 @@ router.post("/login", async (req, res) => {
 })
 
 router.post('/token', (req, res)=>{
-    console.log(`New Token Requested`)
+    // console.log(`New Token Requested`)
 
 	const refreshToken = req.body.refreshToken
     if (!refreshToken || !isRefreshTokenPresent(refreshToken)) return res.status(401).send()
 
     jwt.verify(refreshToken, process.env.JWT_SECRET || '', async (err : any, user_info : any)=> {
         const user = await findUserById(user_info.id_user)
-        console.log("jwt data", user_info, "db data", user)
+        // console.log("jwt data", user_info, "db data", user)
         if (err || !user) return res.status(401).send()
 
         res.json({accessToken : generateAccessToken(user)})
