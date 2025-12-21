@@ -70,9 +70,13 @@ router.post('/register', async (req, res) => {
 })
 
 router.delete('/logout', (req, res)=>{
-	const token = req.body.refreshToken	
-    removeRefreshToken(token)
-    res.sendStatus(200)
+	console.log(req.body)
+	if (req.body && req.body.refreshToken){
+		removeRefreshToken(req.body.refreshToken)
+		res.sendStatus(200)
+	}
+
+    else return res.sendStatus(401)
 })
 
 export function authenticateUser(req : Request, res : Response, next : NextFunction){
