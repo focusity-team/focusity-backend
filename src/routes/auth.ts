@@ -6,11 +6,14 @@ import lodash from 'lodash'
 import { Profile, addUser, User, findUserByUsername, findUserById,  } from '../db/users'
 import { removeRefreshToken, addRefreshToken, isRefreshTokenPresent, generateRefreshToken, generateAccessToken} from '../db/users'
 
+import logger from '../appFuncs/logger'
+
+
 export const router = Router()
 router.post("/login", async (req, res) => {
     const { username, password } = req.body
     const user = await findUserByUsername(username)
-    // console.log(`Login Attempt: Username ${username}; Password ${password}; Userobj ${user}`)
+    logger.debug(`Login Attempt: Username ${username}; Password ${password}; Userobj ${user}`)
 
     if (!user) return res.status(401).send()
     
@@ -26,8 +29,6 @@ router.post("/login", async (req, res) => {
 })
 
 router.post('/token', (req, res)=>{
-    // console.log(`New Token Requested`)
-
 	const refreshToken = req.body.refreshToken
     if (!refreshToken || !isRefreshTokenPresent(refreshToken)) return res.status(401).send()
 
@@ -36,7 +37,9 @@ router.post('/token', (req, res)=>{
         // console.log("jwt data", user_info, "db data", user)
         if (err || !user) return res.status(401).send()
 
-        res.json({accessToken : generateAccessToken(user)})
+        const new_token = generateAccessToken(user)
+        res.json({accessToken : new_token})
+        logger.debug(`new accessToken requested by ${user}: ${new_token}`)
     })
 })
 
@@ -60,9 +63,12 @@ router.post('/register', async (req, res) => {
 
         if (success){
 		    res.status(200).send()
+
+            logger.debug(`new register ${user} ${profile}`)
         }
         else {
             res.status(500).send()
+            logger.debug(`new failed register ${user} ${profile}`)
         }
 	} catch {
 		res.status(500).send()
@@ -71,12 +77,13 @@ router.post('/register', async (req, res) => {
 
 router.post('/logout', (req, res)=>{
 	const token = req.body.refreshToken
+    logger.debug(`new logout token ${token}`)
 	if (token){
 		removeRefreshToken(token)
-		res.sendStatus(200)
+		return res.sendStatus(200)
 	}
 
-    else return res.sendStatus(401)
+    return res.sendStatus(401)
 })
 
 export function authenticateUser(req : Request, res : Response, next : NextFunction){
