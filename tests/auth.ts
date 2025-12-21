@@ -70,7 +70,7 @@ export const authSuite = () => {
 				
 				expect(getRefreshTokens()).toContain(token)
 				
-				const logout_res = await request(app).delete("/auth/logout").send({
+				const logout_res = await request(app).post("/auth/logout").send({
 					"refreshToken": token
 				})
 				

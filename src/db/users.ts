@@ -22,51 +22,49 @@ export interface Profile {
 
 export var users : User[] = []
 export async function findUserByUsername(username : string){
-    const res = await supabase?.from('userinfo').select('*').eq('username', username)
-    // return users.find((user)=> user.username == username)
-    return res?.data?.[0]
+    const { data, error } = await supabase.from('userinfo').select('*').eq('username', username)
+    if (error) throw new Error(JSON.stringify(error))
+        
+    return data[0] 
 }
 
 export async function findUserById(id : number){
-    const res = await supabase?.from('userinfo').select('*').eq('id_user', id)
-    // return users.find((user)=> user.username == username)
-    return res?.data?.[0]
+    const { data, error } = await supabase.from('userinfo').select('*').eq('id_user', id)
+    if (error) throw new Error(JSON.stringify(error))
+        
+    return data[0]
 }
 
 export async function findProfileByUserId(id_user : number){
-    const res = await supabase?.from('profile').select('*').eq('id_user', id_user)
-    // return users.find((user)=> user.username == username)
-    return res?.data?.[0]
+    const {error, data} = await supabase.from('profile').select('*').eq('id_user', id_user)
+    if (error) throw new Error(JSON.stringify(error))
+        
+    return data[0]
 }
 
 export async function addUser(user : User, profile : Profile){
-    const userinfoInsertRes = await supabase?.from('userinfo').insert({
+    const { data: userInfoData, error: userInfoError } = await supabase.from('userinfo').insert({
         username: user.username,
         password: user.password,
         email: user.email,
         fcm_token: "",
         created_on: new Date().toISOString()
+    }).select()
+    
+    if (userInfoError) throw Error(JSON.stringify(userInfoError))
+        
+    const new_id = userInfoData[0].id_user
+    const { data: profileData, error: profileError } = await supabase.from('profile').insert({
+        name: profile.name,
+        description: profile.description,
+        pfp: profile.pfp,
+        id_user: new_id,
     })
-    // console.log("Userinfo res", userinfoInsertRes)
+    
+    
+    if (profileError) throw Error(JSON.stringify(profileError))
 
-    if (userinfoInsertRes?.status == 201){
-        const userNewIdRes = await supabase?.from('userinfo').select('id_user').eq('username', user.username)
-        const new_id = userNewIdRes?.data?.[0]?.id_user
-        const profileInsertRes = await supabase?.from('profile').insert({
-            name: profile.name,
-            description: profile.description,
-            pfp: profile.pfp,
-            id_user: new_id,
-        })
-
-        // console.log("userNewID res", userNewIdRes)
-        // console.log("profileInsert res", profileInsertRes)
-
-        return profileInsertRes?.error == null
-    }
-    else{
-        return false
-    }
+    return true
 }
 
 export function getUsersArray(){
@@ -76,7 +74,7 @@ export function getUsersArray(){
 var refreshTokens : string[] = []
 export function addRefreshToken(token : string){
     if (!refreshTokens.includes(token)) refreshTokens.push(token)
-}
+    }
 
 export function removeRefreshToken(token : String){
     refreshTokens = refreshTokens.filter((t)=> t !== token)
@@ -109,7 +107,7 @@ export async function getProfileFromRequest(req : Request){
     if (!curr_user_id) return undefined
     
     const user_profile = await findProfileByUserId(curr_user_id)
-
+    
     return user_profile
 }
 
@@ -120,7 +118,7 @@ export async function getTodaysStudyHours(id_profile : number){
     date_start.setHours(0, 0, 0, 0)
     const date_end = new Date()
     date_end.setHours(23, 59, 59, 0)
-     
+    
     const res = await supabase?.from('study_session').select('*').eq('id_profile', id_profile).gt('start_date_time', date_start.toISOString()).lt('end_date_time', date_end.toISOString())
     if (!res?.data) return undefined
     
@@ -130,6 +128,6 @@ export async function getTodaysStudyHours(id_profile : number){
             totalSeconds += res.data[i].study_time
         }
     }
-
+    
     return Math.round((totalSeconds / 3600) * 100) / 100
 }

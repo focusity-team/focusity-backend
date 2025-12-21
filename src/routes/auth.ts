@@ -11,45 +11,57 @@ import logger from '../appFuncs/logger'
 
 export const router = Router()
 router.post("/login", async (req, res) => {
-    const { username, password } = req.body
-    const user = await findUserByUsername(username)
-    logger.debug(`Login Attempt: Username ${username}; Password ${password}; Userobj ${user}`)
-
-    if (!user) return res.status(401).send()
-    
-    if (await bcrypt.compare(password, user.password)){
-        const newRefreshToken = generateRefreshToken(user)
-        addRefreshToken(newRefreshToken)
-
-        const newAccessToken = generateAccessToken(user)
-        return res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken })
+    try{
+        
+        const { username, password } = req.body
+        const user = await findUserByUsername(username)
+        logger.debug(`Login Attempt: Username ${username}; Password ${password}; Userobj ${user}`)
+        
+        if (!user) return res.status(401).send()
+            
+        if (await bcrypt.compare(password, user.password)){
+            const newRefreshToken = generateRefreshToken(user)
+            addRefreshToken(newRefreshToken)
+            
+            const newAccessToken = generateAccessToken(user)
+            return res.status(200).json({ accessToken: newAccessToken, refreshToken: newRefreshToken })
+        }
+        
+        res.status(401).send()
+        
     }
-    
-    res.status(401).send()
+    catch (err){
+        return res.sendStatus(500)
+    }
 })
 
 router.post('/token', (req, res)=>{
-	const refreshToken = req.body.refreshToken
-    if (!refreshToken || !isRefreshTokenPresent(refreshToken)) return res.status(401).send()
-
-    jwt.verify(refreshToken, process.env.JWT_SECRET || '', async (err : any, user_info : any)=> {
-        const user = await findUserById(user_info.id_user)
-        // console.log("jwt data", user_info, "db data", user)
-        if (err || !user) return res.status(401).send()
-
-        const new_token = generateAccessToken(user)
-        res.json({accessToken : new_token})
-        logger.debug(`new accessToken requested by ${user}: ${new_token}`)
-    })
+    try{
+        const refreshToken = req.body.refreshToken
+        if (!refreshToken || !isRefreshTokenPresent(refreshToken)) return res.status(401).send()
+            
+        jwt.verify(refreshToken, process.env.JWT_SECRET || '', async (err : any, user_info : any)=> {
+            const user = await findUserById(user_info.id_user)
+            // console.log("jwt data", user_info, "db data", user)
+            if (err || !user) return res.status(401).send()
+                
+            const new_token = generateAccessToken(user)
+            res.json({accessToken : new_token})
+            logger.debug(`new accessToken requested by ${user}: ${new_token}`)
+        })
+    } catch (err) {
+        return res.sendStatus(500)
+    }
+    
 })
 
 router.post('/register', async (req, res) => {
-	try {
-		let hashed_password = await bcrypt.hash(req.body.password, 10)
+    try {
+        let hashed_password = await bcrypt.hash(req.body.password, 10)
         const user: User = {
             id_user: 0,
-			username: req.body.username,
-			password: hashed_password,
+            username: req.body.username,
+            password: hashed_password,
             email: req.body.email
         }
         const profile: Profile = {
@@ -60,42 +72,47 @@ router.post('/register', async (req, res) => {
             id_user: 0,
         }
         const success = await addUser(user, profile)
-
+        
         if (success){
-		    res.status(200).send()
-
-            logger.debug(`new register ${user} ${profile}`)
+            logger.debug(`new register ${JSON.stringify(user)} ${JSON.stringify(profile)}`)
+            return res.status(200).send()
+            
         }
         else {
-            res.status(500).send()
-            logger.debug(`new failed register ${user} ${profile}`)
+            logger.debug(`new failed register ${JSON.stringify(user)} ${JSON.stringify(profile)}`)
+            return res.status(500).send()
         }
-	} catch {
-		res.status(500).send()
-	}
+    } catch {
+        return res.status(500).send()
+    }
 })
 
 router.post('/logout', (req, res)=>{
-	const token = req.body.refreshToken
+    const token = req.body.refreshToken
     logger.debug(`new logout token ${token}`)
-	if (token){
-		removeRefreshToken(token)
-		return res.sendStatus(200)
-	}
-
+    if (token){
+        removeRefreshToken(token)
+        return res.sendStatus(200)
+    }
+    
     return res.sendStatus(401)
 })
 
 export function authenticateUser(req : Request, res : Response, next : NextFunction){
-    const authHeader = req.headers.authorization
-    const token = authHeader?.split(" ")[1]
-    if (!token) return res.status(401).send()
-        
-    jwt.verify(token, process.env.JWT_SECRET ?? '', (err, user : any)=>{
-        if (err) return res.status(401).send()
-        lodash.set(req, "id_user", user.id_user)
-        next()
-    })
+    try{
+        const authHeader = req.headers.authorization
+        const token = authHeader?.split(" ")[1]
+        if (!token) return res.status(401).send()
+            
+        jwt.verify(token, process.env.JWT_SECRET ?? '', (err, user : any)=>{
+            if (err) return res.status(401).send()
+                lodash.set(req, "id_user", user.id_user)
+            next()
+        })
+    }
+    catch (err) {
+        return res.sendStatus(500)
+    }
 }
 
 
