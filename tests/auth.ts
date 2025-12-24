@@ -1,25 +1,66 @@
-import request from 'supertest'
+import request, {Response} from 'supertest'
 import { app, server } from '../src/index'
 import { getRefreshTokens, clearRefreshTokens } from '../src/db/users'
 import { supabase } from '../src/db/db'
 
 export const TEST_USER = 
 {
-	"username": "aaa",
+	"username": "aaabbb",
 	"password": "@A123456",
 	"description": "Descrizione del fantasma di gario",
 	"pfp": 10,
 	"name": "aaa",
-	"email": "aaa@gmail.com"
+	"email": "aaa@gmail.com",
+	"accessToken": null,
+	"refreshToken": null
 }
 
+export const authenticatedRequest = async (
+	user : typeof TEST_USER,
+	method: 'get' | 'post' | 'put' | 'delete',
+	url: string,
+	data: object = {}
+) => {
+	const sendRequest = (token: string) => {
+		const req = request(app)[method](url).set('Authorization', `Bearer ${token}`);
+		return method === 'get' ? req : req.send(data);
+	};
+	
+	if (!user.accessToken || !user.refreshToken) await login(user)
+	
+	let res = await sendRequest(user.accessToken!);
+	
+	// Check if server returned 401 with the specific expiration message
+	if (res.status === 401 && res.body.error === 'invalid access code') {
+		
+		// 1. Request a new token
+		const refreshRes = await request(app)
+		.post('/auth/token')
+		.send({ refreshToken: user.refreshToken });
+		
+		if (refreshRes.status === 200) {
+			user.accessToken = refreshRes.body.accessToken;
+			
+			// 2. Retry the original request with the new token
+			res = await sendRequest(user.accessToken!);
+		} else {
+			throw new Error('Refresh token expired or invalid. Manual login required.');
+		}
+	}
+	
+	return res;
+};
 
 
 export async function login(user: typeof TEST_USER){
-	return await request(app).post("/auth/login").send({
+	const resp = await request(app).post("/auth/login").send({
 		"username": user.username,
 		"password": user.password
 	})
+	user.accessToken = resp.body.accessToken
+	user.refreshToken = resp.body.refreshToken
+	
+	return resp
 }
 
 export async function getNewAccessToken(refreshToken : string){
@@ -33,9 +74,9 @@ export async function register(user: typeof TEST_USER){
 }
 
 export const authSuite = () => {
-
+	
 	describe("Auth flow", ()=>{
-
+		
 		describe('POST /auth/register', ()=>{
 			it('should create the user and return 200', async ()=>{
 				const reg_res = await register(TEST_USER)

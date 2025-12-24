@@ -2,11 +2,18 @@ import { Router } from 'express'
 import { getSubjectsNames } from '../db/globalData'
 import { z } from 'zod'
 import { authenticateUser } from './auth'
-import { getProfileFromRequest } from '../db/users'
+import { getProfileFromRequest, Profile } from '../db/users'
 import { supabase } from '../db/db'
+import logger from '../appFuncs/logger'
 
 export const router = Router()
 
+
+export async function isSubjectOwner(profile : Profile, id_subject: number){
+    const {data, error} = await supabase.from("subject").select("id_subject").eq("id_profile", profile.id_profile).eq("id_subject", id_subject)
+
+    return !(error || data.length == 0)
+}
 
 const createSubjectSchema = z.object({
 	name: z.string().max(30)
@@ -118,4 +125,31 @@ router.post('/editTopic', authenticateUser, async (req, res)=>{
 
     if (err) return res.sendStatus(500)
     return res.sendStatus(200)
+})
+
+const getTopicsSchema = z.object({
+    id_subject: z.coerce.number().int().positive(),
+})
+
+router.get('/getTopicsFromSubject/:id_subject', authenticateUser, async (req, res)=>{
+    const userProfile = await getProfileFromRequest(req)
+    if (!userProfile) return res.sendStatus(401)
+
+    const validation = getTopicsSchema.safeParse(req.params)
+	if (!validation.success) return res.status(400).json({error: z.treeifyError(validation.error)})
+
+    const {id_subject} = validation.data
+
+
+    if (!isSubjectOwner(userProfile, id_subject)) return res.sendStatus(401)
+    
+    logger.debug("Get Topics for subject: ", id_subject)
+
+    const {data, error} = await supabase.from("topic").select("*").eq("id_subject", id_subject)
+
+    if (error) return res.sendStatus(400)
+    
+    return res.status(200).json({
+        topics: data
+    })
 })

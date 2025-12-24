@@ -27,7 +27,7 @@ app.use(express.json())
 app.use('/auth', AuthRouter)
 app.use('/profile', ProfileRouter)
 app.use('/session', SessionRouter)
-app.use('/subject', SubjectsRouter)
+app.use('/subjects', SubjectsRouter)
 
 app.get('/', authenticateUser, (req, res)=>{
     res.send("Logged In")

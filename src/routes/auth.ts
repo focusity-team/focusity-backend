@@ -65,7 +65,7 @@ router.post('/register', async (req, res) => {
             email: req.body.email
         }
         const profile: Profile = {
-            id: 0,
+            id_profile: 0,
             name: req.body.name,
             description: req.body.description,
             pfp: req.body.pfp,
@@ -99,13 +99,14 @@ router.post('/logout', (req, res)=>{
 })
 
 export function authenticateUser(req : Request, res : Response, next : NextFunction){
+    const error_message = "invalid access code"
     try{
         const authHeader = req.headers.authorization
         const token = authHeader?.split(" ")[1]
-        if (!token) return res.status(401).send()
+        if (!token) return res.status(401).json({error: error_message})
             
         jwt.verify(token, process.env.JWT_SECRET ?? '', (err, user : any)=>{
-            if (err) return res.status(401).send()
+            if (err) return res.status(401).json({error: error_message})
                 lodash.set(req, "id_user", user.id_user)
             next()
         })

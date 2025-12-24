@@ -1,24 +1,18 @@
 import { supabase } from "../src/db/db";
 import request from "supertest";
-import { login, register, TEST_USER} from "./auth";
+import { authenticatedRequest, login, register, TEST_USER} from "./auth";
 import { app } from '../src/index'
 import { createSubject, createTopic } from "./subject";
 
 
 async function createSession(title: string){
-    const login_resp = await login(TEST_USER)            
-    const token = login_resp.body.accessToken
-    
-    return await request(app).post('/session/create').set('Authorization', `Bearer ${token}`).send({
+    return await authenticatedRequest(TEST_USER, "post", "/session/create", {
         title
     })
 }
 
 async function createSegment(id_session: number, id_topic : number){
-    const login_resp = await login(TEST_USER)            
-    const token = login_resp.body.accessToken
-    
-    return await request(app).post('/session/createSegment').set('Authorization', `Bearer ${token}`).send({
+    return await authenticatedRequest(TEST_USER, "post", "/session/createSegment", {
         id_topic,
         id_session
     })

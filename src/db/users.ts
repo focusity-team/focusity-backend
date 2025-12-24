@@ -11,7 +11,7 @@ export interface User{
 }
 
 export interface Profile {
-    id: number,
+    id_profile: number,
     description: string,
     name: string,
     pfp: number,
@@ -39,7 +39,7 @@ export async function findProfileByUserId(id_user : number){
     const {error, data} = await supabase.from('profile').select('*').eq('id_user', id_user)
     if (error) throw new Error(JSON.stringify(error))
         
-    return data[0]
+    return data[0] as Profile
 }
 
 export async function addUser(user : User, profile : Profile){
@@ -108,7 +108,7 @@ export async function getProfileFromRequest(req : Request){
     
     const user_profile = await findProfileByUserId(curr_user_id)
     
-    return user_profile
+    return user_profile as Profile
 }
 
 
