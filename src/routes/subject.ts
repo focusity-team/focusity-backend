@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import { getSubjectsNames } from '../db/globalData'
 import { z } from 'zod'
 import { authenticateUser } from './auth'
 import { getProfileFromRequest, Profile } from '../db/users'
@@ -9,11 +8,30 @@ import logger from '../appFuncs/logger'
 export const router = Router()
 
 
-export async function isSubjectOwner(profile : Profile, id_subject: number){
+async function isSubjectOwner(profile : Profile, id_subject: number){
     const {data, error} = await supabase.from("subject").select("id_subject").eq("id_profile", profile.id_profile).eq("id_subject", id_subject)
 
     return !(error || data.length == 0)
 }
+
+async function isTopicOwner(profile: Profile, id_topic: number){
+    const {data, error} = await supabase.from("topic").select("id_subject").eq("id_topic", id_topic).single()
+    if (error || !data) return false
+
+    return isSubjectOwner(profile, data.id_subject)
+}
+
+
+
+router.get("/getSubjects", authenticateUser, async (req, res) => {
+	const userProfile = await getProfileFromRequest(req)
+	if (!userProfile) return res.sendStatus(401)
+    
+    const {data, error} = await supabase.from("subject").select("id_subject, name").eq("id_profile", userProfile.id_profile)
+    if (error) res.sendStatus(500)
+
+    return res.status(200).json({data})
+})
 
 const createSubjectSchema = z.object({
 	name: z.string().max(30)
@@ -52,7 +70,8 @@ router.post('/edit', authenticateUser, async (req, res)=>{
 	if (!validation.success) return res.status(400).json({error: z.treeifyError(validation.error)})
 
     const { id_subject, remove, name } = validation.data
-    
+    if (!await isSubjectOwner(userProfile, id_subject)) return res.status(401).json({error: "Subject non owned"})
+
     var err = null
     if (remove) {
         const {data, error} = await supabase!.from('subject').delete().eq('id_subject', id_subject)
@@ -84,7 +103,7 @@ router.post('/addTopic', authenticateUser, async (req, res) => {
     if (!validation.success) return res.status(400).json({error: z.treeifyError(validation.error)})
 
     const {id_subject, name} = validation.data
-
+    if (!await isSubjectOwner(userProfile, id_subject)) return res.status(401).json({error: "Subject non owned"})
 
     const create_topic_res = await supabase?.from('topic').insert({
         id_subject,
@@ -111,6 +130,8 @@ router.post('/editTopic', authenticateUser, async (req, res)=>{
 
     const { id_topic, remove, name } = validation.data
 
+    if (! await isTopicOwner(userProfile, id_topic)) return res.status(401).json({error: "topic now owned"})
+
     var err = null
     if (remove) {
         const {data, error} = await supabase!.from('topic').delete().eq('id_topic', id_topic)
@@ -121,7 +142,6 @@ router.post('/editTopic', authenticateUser, async (req, res)=>{
         }).eq('id_topic', id_topic)
         err = error
     }
-
 
     if (err) return res.sendStatus(500)
     return res.sendStatus(200)
@@ -141,7 +161,7 @@ router.get('/getTopicsFromSubject/:id_subject', authenticateUser, async (req, re
     const {id_subject} = validation.data
 
 
-    if (!isSubjectOwner(userProfile, id_subject)) return res.sendStatus(401)
+    if (! await isSubjectOwner(userProfile, id_subject)) return res.status(401).json({error: "Subject not owned"})
     
     logger.debug("Get Topics for subject: ", id_subject)
 

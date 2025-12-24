@@ -2,7 +2,6 @@ import request from 'supertest'
 import { app } from '../src'
 import { TEST_USER, authenticatedRequest, login } from './auth'
 import { supabase } from '../src/db/db'
-import { isSubjectOwner } from '../src/routes/subject'
 import { findProfileByUserId, Profile } from '../src/db/users'
 
 export async function createSubject(name : string){
@@ -80,6 +79,15 @@ export const subjectSuite = ()=>{
                 expect(read_supa?.data?.[0].name).toBe("pirupiru_editato")
 
             })
+
+            it("should return 401 if topic is not owned", async () =>{
+                const edit_resp = await authenticatedRequest(TEST_USER, "post", "/subjects/editTopic", {
+                    id_topic: 192387918,
+                    name: "pirupiru_editato"
+                })
+
+                expect(edit_resp.status).toBe(401)
+            })
         })
 
 
@@ -104,6 +112,18 @@ export const subjectSuite = ()=>{
 
                 expect(get_topics_resp.status).not.toBe(200)
             })
+        })
+
+
+        describe("GET /subjects/getSubjects", ()=>{
+            it("should return the array of subjects", async ()=>{
+                const get_subjs = await authenticatedRequest(TEST_USER, "get", "/subjects/getSubjects")
+
+                expect(get_subjs.status).toBe(200)
+                expect(get_subjs.body.data).toBeInstanceOf(Array)
+                expect(get_subjs.body.data).not.toHaveLength(0)
+            })
+
         })
         
     })
